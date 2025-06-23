@@ -14,28 +14,28 @@ selected_features = joblib.load(FEATURE_PATH)
 st.title("📧 Email Spam Classifier")
 st.markdown("Ketik isi email di bawah ini untuk mengetahui apakah tergolong **SPAM** atau **HAM** (bukan spam).")
 
-sentence = st.text_input("Masukkan kalimat email:")
+sentence = st.text_area("Masukkan isi email:", height=200)
 
-if sentence.strip():
-    with st.spinner("Menganalisis..."):
-        # Preprocessing
-        words = sentence.lower().split()
+if st.button("🔍Find Out"):
+    if sentence.strip():
+        with st.spinner("Menganalisis..."):
+            # Preprocessing
+            words = sentence.lower().split()
 
-        # Manual BoW based on selected features
-        input_dict = {word: 0 for word in selected_features}
-        for word in words:
-            if word in input_dict:
-                input_dict[word] += 1
+            # Manual BoW
+            input_dict = {word: 0 for word in selected_features}
+            for word in words:
+                if word in input_dict:
+                    input_dict[word] += 1
+            input_df = pd.DataFrame([input_dict])
 
-        input_df = pd.DataFrame([input_dict])
+            # Prediction
+            pred = model.predict(input_df)[0]
+            prob = model.predict_proba(input_df)[0][1]
 
-        # Predict
-        pred = model.predict(input_df)[0]
-        prob = model.predict_proba(input_df)[0][1]
-
-        if pred == 1:
-            st.error(f"🚫 Prediksi: SPAM (Probabilitas: {prob:.4f})")
-        else:
-            st.success(f"✅ Prediksi: HAM (Probabilitas spam: {prob:.4f})")
-else:
-    st.info("Masukkan teks email terlebih dahulu.")
+            if pred == 1:
+                st.error(f"🚫 Prediksi: SPAM (Probabilitas: {prob:.4f})")
+            else:
+                st.success(f"✅ Prediksi: HAM (Probabilitas spam: {prob:.4f})")
+    else:
+        st.warning("Mohon masukkan isi email terlebih dahulu.")
